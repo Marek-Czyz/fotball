@@ -8,11 +8,10 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { useCallback } from 'react'
 import database from '../firebase';
 import { getDatabase, onValue, update, ref, set, get, child, ref as ref_database } from 'firebase/database'
-import Spinner from 'react-bootstrap/Spinner';
-import Alert from 'react-bootstrap/Alert';
 
 
-
+const listRef = ref_database(database, 'mar3kczyz@gmail_com');
+const templateRef = ref_database(database, 'template');
 
 const HomeScreen = ({ match }) => {
 
@@ -20,7 +19,7 @@ const HomeScreen = ({ match }) => {
     var SheetData = [];
     var ScheduleData = [];
     var bettingTemplate = [];
-    var BettingScore = [];
+    //var BettingData = [];
 
 
 
@@ -37,82 +36,50 @@ const HomeScreen = ({ match }) => {
     const teamData = [];
     const teamTempData = [];
 
-    
-    function CalcPoints(a,b,c,d,i) {
-
-        var score_A = 0;
-        var score_B = 0;
-        var score_res = 0;
-
-        score_A = +(a === c) //poeng for number of goals A
-        score_B = +(b === d) //poeng for number of goals B
-        score_res = 2*((a === b)&&(c === d))+2*((a < b)&&(c < d))+2*((a > b)&&(c > d))
-        BettingScore.push(score_A + score_B + score_res);
-        return score_A + score_B + score_res;
-        
-        
-    }
-
-    console.log("score: " + BettingScore[1])
-    
-    
-    const WriteTo = (user,id,name,score) => {
-    
-      const gid = (n) => {
-        if (n < 10) {
-          return '0' + n
-        }
-        return '' + n
-      }
-
-      update(ref(database, user), {
+    const WriteTo = (user,id,team,score) => {
+    update(ref(database, user), {
 
 
-        [gid(id) + name]:[name,score]
+        [id + team]:[team,score]
 
       });}
-
-      const user = getAuth().currentUser;
-      const listRef = ref_database(database, user.email.replace(".", "_"));
-      const templateRef = ref_database(database, 'admin@kjor_pl');
-      //console.log("this is ref: "+templateRef)
 
       //array of all scores and teams in the template
       onValue(templateRef,(snapshot) => {
 
         const template = snapshot.val();
-
-        if (template!==null){
         const t_length = Object.keys(template).length;
         console.log(t_length)
         for (var i=0; i < t_length; i++) {
           betTempData.push(Array.from(template[Object.keys(template)[i]])[1])
           teamTempData.push(Array.from(template[Object.keys(template)[i]])[0])
         }
-        console.log(betTempData,teamTempData)}
+        console.log(betTempData,teamTempData)
       })
 
 
       //all scores and teams for the current user
-      
       onValue(listRef, (snapshot) => {
 
-        
         const data = snapshot.val();
-        
-        if (data!==null){
+
 
         const length = Object.keys(data).length;
-        console.log(length)
         for (var i=0; i < length; i++) {
 
           bettingData.push(Array.from(data[Object.keys(data)[i]])[1])
           teamData.push(Array.from(data[Object.keys(data)[i]])[0])
         }
-        
-        console.log(bettingData,teamData)}
+        //bettingData = newArray (Array.from(data[Object.keys(data)[1],[1]])
+
+
+
+        //)
+        const value = Array.from(data[Object.keys(data)[1]])[1]
+        //console.log("this is the value: "+value+" data length: "+Object.keys(data).length)
+        console.log(bettingData,teamData)
       })
-    
+
 
 
     const Push = (user,team,score) => {
@@ -165,10 +132,10 @@ const HomeScreen = ({ match }) => {
             ...state,
             [evt.target.name]: value});
 
-          console.log(evt.target.name, evt.target.value, evt.target.id) ;
+          console.log(evt.target.name, evt.target.value, evt.target.id);
 
         //push data to database
-        WriteTo(user.email.replace(".", "_"), evt.target.id, evt.target.name, evt.target.value)
+        WriteTo("template", evt.target.id, evt.target.name, evt.target.value)
 
 //user.email.replace(".", "_")
     }
@@ -177,7 +144,7 @@ const HomeScreen = ({ match }) => {
 
     })
 
-    
+    const user = getAuth().currentUser;
 
 
 
@@ -209,10 +176,9 @@ const HomeScreen = ({ match }) => {
     <Card.Body>
 
     <Row>
-    
         <Col className="center ml-2">
-            <Row className="center mt-4"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Home_code} size={25} />&nbsp;&nbsp;<h4>{data.Teamhome}</h4>&nbsp;&nbsp;<h4 style={{color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr-1)-1]}</h4></Row>
-            <Row className="center mt-2"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Away_code} size={25} />&nbsp;&nbsp;<h4>{data.Teamaway}</h4>&nbsp;&nbsp;<h4 style={{color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr)-1]}</h4></Row>
+            <Row className="center mt-4"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Home_code} size={25} />&nbsp;&nbsp;<h4>{data.Teamhome}</h4>&nbsp;&nbsp;<h4 style={{color:"red"}}>{betTempData[data.nr]}</h4></Row>
+            <Row className="center mt-2"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Away_code} size={25} />&nbsp;&nbsp;<h4>{data.Teamaway}</h4></Row>
         </Col>
 
 
@@ -226,15 +192,12 @@ const HomeScreen = ({ match }) => {
             <Form.Control
              type="number"
              style={{ width: 70, fontSize: 22, borderColor: "#ffffff", outline: "none", borderRadius: "8px" }}
-             //disabled={true}
+             disabled={true}
              width="100px"
              value={state.minutes}
-             name={"A_" + data.Teamhome}
-            
-             disabled={data.status != "not started"} //disable form when blocked 
-
+             name={data.Teamhome}
              id={data.nr}
-             placeholder= {bettingData[(2*data.nr-1)-1]} //transposing numbers for pairs of teams
+             placeholder= {bettingData[data.nr]}
              onChange={handleChange}
             />
             <Form.Control
@@ -243,12 +206,9 @@ const HomeScreen = ({ match }) => {
 
              width="100px"
              value={state.minutes}
-             name={"B_"+data.Teamaway}
-             
-             disabled={data.status != "not started"} //disable form when blocked 
-
+             name={data.Teamaway}
              id={data.nr}
-             placeholder={bettingData[(2*data.nr)-1]} //transposing numbers for pairs of teams
+             placeholder="0"
              onChange={handleChange}
             />
             </Form.Group>
@@ -261,11 +221,8 @@ const HomeScreen = ({ match }) => {
     <br />
     <Row>
 
-     <p>Game nr: {data.nr},&nbsp;&nbsp;&nbsp; {data.City} {data.Date} ,{data.Time}  </p>&nbsp;&nbsp;&nbsp;{(data.status === "ongoing") && <><Spinner animation="grow" variant="danger" size="sm"/>&nbsp;<p>Live</p></>}
+     <p>Game nr: {data.nr},&nbsp;&nbsp;&nbsp; {data.City} {data.Date} ,{data.Time}  </p>
     </Row>
-    {data.status != "not started" && <Alert variant={"info"}>
-          Points earned in this game: {CalcPoints(bettingData[(2*data.nr-1)-1], bettingData[(2*data.nr)-1], betTempData[(2*data.nr-1)-1], betTempData[(2*data.nr)-1],data.nr)}
-        </Alert>}
     </Card.Body>
 
 

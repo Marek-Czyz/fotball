@@ -37,7 +37,10 @@ const HomeScreen = ({ match }) => {
     const teamData = [];
     const teamTempData = [];
 
-    
+    const user = getAuth().currentUser;
+    const listRef = ref_database(database, user.email.replace(".", "_"));
+    const templateRef = ref_database(database, 'admin@kjor_pl');
+
     function CalcPoints(a,b,c,d,i) {
 
         var score_A = 0;
@@ -60,6 +63,13 @@ const HomeScreen = ({ match }) => {
         console.log("score: " + BettingScore + " sum: "+sum)
 
         TotalScore = sum;
+
+        update(ref(database, user.email.replace(".", "_")), {
+        
+          ["x"]:[sum]
+  
+        });
+
         return score_A + score_B + score_res;
         
         
@@ -84,9 +94,7 @@ const HomeScreen = ({ match }) => {
 
       });}
 
-      const user = getAuth().currentUser;
-      const listRef = ref_database(database, user.email.replace(".", "_"));
-      const templateRef = ref_database(database, 'admin@kjor_pl');
+      
       //console.log("this is ref: "+templateRef)
 
       //array of all scores and teams in the template
@@ -209,7 +217,7 @@ const HomeScreen = ({ match }) => {
 
 <br />
 
-<p>Your total score: {TotalScore}</p>
+
 
 {ScheduleData.map((data) => (
 

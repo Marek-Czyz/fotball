@@ -20,8 +20,8 @@ const HomeScreen = ({ match }) => {
     var SheetData = [];
     var ScheduleData = [];
     var bettingTemplate = [];
-    var BettingScore = [];
-
+    const BettingScore = [];
+    var TotalScore = 0;
 
 
     const [sheetData, setData] = useState({});
@@ -48,12 +48,24 @@ const HomeScreen = ({ match }) => {
         score_B = +(b === d) //poeng for number of goals B
         score_res = 2*((a === b)&&(c === d))+2*((a < b)&&(c < d))+2*((a > b)&&(c > d))
         BettingScore.push(score_A + score_B + score_res);
+        
+
+        let sum = 0;
+ 
+        // Running the for loop
+        for (let k = 0; k < BettingScore.length; k++) {
+            sum += Math.floor(BettingScore[k]);
+        }
+
+        console.log("score: " + BettingScore + " sum: "+sum)
+
+        TotalScore = sum;
         return score_A + score_B + score_res;
         
         
     }
 
-    console.log("score: " + BettingScore[1])
+    
     
     
     const WriteTo = (user,id,name,score) => {
@@ -197,13 +209,13 @@ const HomeScreen = ({ match }) => {
 
 <br />
 
-
+<p>Your total score: {TotalScore}</p>
 
 {ScheduleData.map((data) => (
 
 
   <>
-
+  
   <Card style= {data.status === "ongoing" ? {background:"#FDEBD0", width: '26rem' } : data.status === "finished" ? {background:"#D5DBDB ", width: '26rem' } : {background:"#F4F6F6", width: '26rem' } }>
 
     <Card.Body>
@@ -264,7 +276,8 @@ const HomeScreen = ({ match }) => {
      <p>Game nr: {data.nr},&nbsp;&nbsp;&nbsp; {data.City} {data.Date} ,{data.Time}  </p>&nbsp;&nbsp;&nbsp;{(data.status === "ongoing") && <><Spinner animation="grow" variant="danger" size="sm"/>&nbsp;<p>Live</p></>}
     </Row>
     {data.status != "not started" && <Alert variant={"info"}>
-          Points earned in this game: {CalcPoints(bettingData[(2*data.nr-1)-1], bettingData[(2*data.nr)-1], betTempData[(2*data.nr-1)-1], betTempData[(2*data.nr)-1],data.nr)}
+          Points earned in this game: {CalcPoints(bettingData[(2*data.nr-1)-1], bettingData[(2*data.nr)-1], betTempData[(2*data.nr-1)-1], betTempData[(2*data.nr)-1],data.nr)}<br />
+          Sum so far: {TotalScore}
         </Alert>}
     </Card.Body>
 

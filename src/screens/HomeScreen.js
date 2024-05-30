@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState }  from "react"
 import useGoogleSheets from 'use-google-sheets';
-import { Form, Row, Col, Container, Card, Badge, ProgressBar, Image, Table, Accordion, Button} from "react-bootstrap";
+import { Form, Row, Col, Container, Card, Badge, ProgressBar, Image, Table, Accordion, Button, FormGroup} from "react-bootstrap";
 //import { AuthContextProvider, useAuthState } from './firebase'
 import { getAuth } from 'firebase/auth';
 import CountryFlag from "react-native-country-flag";
@@ -33,6 +34,7 @@ const HomeScreen = ({ match }) => {
 
     const bettingData = [];
     const betTempData = [];
+    const scoreData = [];
 
     const teamData = [];
     const teamTempData = [];
@@ -40,6 +42,7 @@ const HomeScreen = ({ match }) => {
     const user = getAuth().currentUser;
     const listRef = ref_database(database, user.email.replace(".", "_"));
     const templateRef = ref_database(database, 'admin@kjor_pl');
+    const scoreRef = ref_database(database,"score");
 
     function CalcPoints(a,b,c,d,i) {
 
@@ -51,10 +54,10 @@ const HomeScreen = ({ match }) => {
         score_B = +(b === d) //poeng for number of goals B
         score_res = 2*((a === b)&&(c === d))+2*((a < b)&&(c < d))+2*((a > b)&&(c > d))
         BettingScore.push(score_A + score_B + score_res);
-        
+
 
         let sum = 0;
- 
+
         // Running the for loop
         for (let k = 0; k < BettingScore.length; k++) {
             sum += Math.floor(BettingScore[k]);
@@ -65,21 +68,21 @@ const HomeScreen = ({ match }) => {
         TotalScore = sum;
 
         update(ref(database, user.email.replace(".", "_")), {
-        
+
           ["x"]:[sum]
-  
+
         });
 
         return score_A + score_B + score_res;
-        
-        
+
+
     }
 
-    
-    
-    
+
+
+
     const WriteTo = (user,id,name,score) => {
-    
+
       const gid = (n) => {
         if (n < 10) {
           return '0' + n
@@ -94,7 +97,7 @@ const HomeScreen = ({ match }) => {
 
       });}
 
-      
+
       //console.log("this is ref: "+templateRef)
 
       //array of all scores and teams in the template
@@ -104,35 +107,56 @@ const HomeScreen = ({ match }) => {
 
         if (template!==null){
         const t_length = Object.keys(template).length;
-        console.log(t_length)
+        //console.log(t_length)
         for (var i=0; i < t_length; i++) {
           betTempData.push(Array.from(template[Object.keys(template)[i]])[1])
           teamTempData.push(Array.from(template[Object.keys(template)[i]])[0])
         }
-        console.log(betTempData,teamTempData)}
+        //console.log(betTempData,teamTempData)
+      }
       })
 
 
       //all scores and teams for the current user
-      
+
       onValue(listRef, (snapshot) => {
 
-        
+
         const data = snapshot.val();
-        
+
         if (data!==null){
 
         const length = Object.keys(data).length;
-        console.log(length)
+        //console.log(length)
         for (var i=0; i < length; i++) {
 
           bettingData.push(Array.from(data[Object.keys(data)[i]])[1])
           teamData.push(Array.from(data[Object.keys(data)[i]])[0])
         }
-        
-        console.log(bettingData,teamData)}
+
+        //console.log(bettingData,teamData)
+      }
       })
-    
+
+      onValue(scoreRef, (snapshot) => {
+
+
+        const score = snapshot.val();
+
+        if (score!==null){
+
+        const length = Object.keys(score).length;
+        //console.log(score)
+        for (var i=0; i < length; i++) 
+        {
+
+        scoreData.push([Array.from(score[Object.keys(score)[i]])[0],Array.from(score[Object.keys(score)[i]])[1]])
+        //   teamData.push(Array.from(data[Object.keys(data)[i]])[0])
+         }
+
+        console.log(scoreData)
+      }
+      })
 
 
     const Push = (user,team,score) => {
@@ -176,7 +200,37 @@ const HomeScreen = ({ match }) => {
 
 
 
-    }  
+    }
+
+    const [name, setName] = useState("");
+    const [email, setMail] = useState("");
+
+    function handleSubmit(evt) {
+
+      //const value = evt.target.value;
+
+      evt.preventDefault();
+      var score=0;
+      update(ref(database, "score"), {
+
+
+        [email.replace(".", "_")]:[name,email,score]
+
+      });
+
+      //alert(`The name you entered was: ${name}`)
+
+      //WriteTo("score", evt.target.id, evt.target.name, evt.target.value)
+
+
+    }
+    function updateScore(evt) {
+
+      evt.preventDefault();
+      
+
+
+    }
 
     function handleChange(evt) {
         const value = evt.target.value;
@@ -197,7 +251,7 @@ const HomeScreen = ({ match }) => {
 
     })
 
-    
+
 
 
 
@@ -209,7 +263,43 @@ const HomeScreen = ({ match }) => {
     <>
 
 
-{/* <h1>Your user name is: {user.email}</h1> */}
+{/* ======================================= Admin Panel ================================================================================*/}
+
+{user.email==="admin@kjor.pl" &&
+ <Container >
+ <br />
+ <Form onSubmit={handleSubmit}>
+      <Form.Group className="mb-3" controlId="formEmail">
+        <Form.Label>Email address</Form.Label>
+        <Form.Control type="email" placeholder="Enter email" value={email} onChange={(e) => setMail(e.target.value)}
+        style={{ width: 270, fontSize: 22, borderColor: "#ffffff", outline: "none", borderRadius: "8px" }} />
+        <Form.Text className="text-muted">
+
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group className="mb-3" controlId="formUsername">
+        <Form.Label>Password</Form.Label>
+        <Form.Control type="text" placeholder="Player name" value={name} onChange={(e) => setName(e.target.value)}
+        style={{ width: 270, fontSize: 22, borderColor: "#ffffff", outline: "none", borderRadius: "8px" }} />
+      </Form.Group>
+      <Button variant="primary" type="submit">
+        Add user
+      </Button>
+    </Form>
+    <br />
+    <Button variant="primary" type="submit" onSubmit={updateScore}>
+        Update score
+      </Button>
+</Container>
+
+// ====================================================================================================================================
+}
+
+
+
+
+
 
 
     <Container >
@@ -223,13 +313,13 @@ const HomeScreen = ({ match }) => {
 
 
   <>
-  
+
   <Card style= {data.status === "ongoing" ? {background:"#FDEBD0", width: '26rem' } : data.status === "finished" ? {background:"#D5DBDB ", width: '26rem' } : {background:"#F4F6F6", width: '26rem' } }>
 
     <Card.Body>
 
     <Row>
-    
+
         <Col className="center ml-2">
             <Row className="center mt-4"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Home_code} size={25} />&nbsp;&nbsp;<h4>{data.Teamhome}</h4>&nbsp;&nbsp;<h4 style={{color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr-1)-1]}</h4></Row>
             <Row className="center mt-2"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Away_code} size={25} />&nbsp;&nbsp;<h4>{data.Teamaway}</h4>&nbsp;&nbsp;<h4 style={{color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr)-1]}</h4></Row>
@@ -250,8 +340,8 @@ const HomeScreen = ({ match }) => {
              width="100px"
              value={state.minutes}
              name={"A_" + data.Teamhome}
-            
-             disabled={data.status != "not started"} //disable form when blocked 
+
+             disabled={data.status != "not started"} //disable form when blocked
 
              id={data.nr}
              placeholder= {bettingData[(2*data.nr-1)-1]} //transposing numbers for pairs of teams
@@ -264,8 +354,8 @@ const HomeScreen = ({ match }) => {
              width="100px"
              value={state.minutes}
              name={"B_"+data.Teamaway}
-             
-             disabled={data.status != "not started"} //disable form when blocked 
+
+             disabled={data.status != "not started"} //disable form when blocked
 
              id={data.nr}
              placeholder={bettingData[(2*data.nr)-1]} //transposing numbers for pairs of teams
@@ -276,7 +366,7 @@ const HomeScreen = ({ match }) => {
 
             </Form>
 
-        </Col>  
+        </Col>
     </Row>
     <br />
     <Row>
@@ -285,7 +375,7 @@ const HomeScreen = ({ match }) => {
     </Row>
     {data.status != "not started" && <Alert variant={"info"}>
           Points earned in this game: {CalcPoints(bettingData[(2*data.nr-1)-1], bettingData[(2*data.nr)-1], betTempData[(2*data.nr-1)-1], betTempData[(2*data.nr)-1],data.nr)}<br />
-          Sum so far: {TotalScore}
+          Total: {TotalScore}
         </Alert>}
     </Card.Body>
 

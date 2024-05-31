@@ -108,23 +108,28 @@ const ScoreScreen = ({ match }) => {
             <Table striped bordered hover variant="light">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Navn</th>
-                  <th>Poeng</th>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Points</th>
                 </tr>
               </thead>
               <tbody>
                 {scoreObjects.sort(function (b, a) {
                   return parseFloat(a.poeng) - parseFloat(b.poeng);
                 }).map((data, i) => (
+
+                  
                   <>
+                   
                     <tr>
-                      <td>{i + 1}</td>
-                      <td>{data.navn}</td>
-                      <td>{data.poeng}</td>
+                      <td>{(data.navn!=="Admin" && i)}</td>
+                      <td>{(data.navn!=="Admin" && data.navn)}</td>
+                      <td>{(data.navn!=="Admin" && data.poeng)}</td>
                     </tr>
                     <tr></tr>
                   </>
+                 
+                  
                 ))}
               </tbody>
             </Table>

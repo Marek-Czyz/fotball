@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState }  from "react"
 import useGoogleSheets from 'use-google-sheets';
 import { Form, Row, Col, Container, Card, Badge, ProgressBar, Image, Table, Accordion, Button, FormGroup} from "react-bootstrap";
@@ -8,7 +9,7 @@ import CountryFlag from "react-native-country-flag";
 import Dropdown from 'react-bootstrap/Dropdown';
 import { useCallback } from 'react'
 import database from '../firebase';
-import { getDatabase, onValue, update, ref, set, get, child, ref as ref_database } from 'firebase/database'
+import { getDatabase, onValue, update, ref, set, get, child, ref as ref_database, doc ,getDoc } from 'firebase/database'
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
 
@@ -35,16 +36,19 @@ const HomeScreen = ({ match }) => {
     const bettingData = [];
     const betTempData = [];
     const scoreData = [];
+    const tableAll = [];
 
     const teamData = [];
     const teamTempData = [];
 
     const user = getAuth().currentUser;
-    const listRef = ref_database(database, user.email.replace(".", "_"));
-    const templateRef = ref_database(database, 'admin@kjor_pl');
+    const listRef = ref_database(database, "All/"+user.email.replace(".", "_"));
+    const templateRef = ref_database(database, 'All/admin@kjor_pl');
     const scoreRef = ref_database(database,"score");
+    const AllRef = ref_database(database,"All");
+    
 
-    function CalcPoints(a,b,c,d,i) {
+    function CalcPoints(a,b,c,d) {
 
         var score_A = 0;
         var score_B = 0;
@@ -53,33 +57,35 @@ const HomeScreen = ({ match }) => {
         score_A = +(a === c) //poeng for number of goals A
         score_B = +(b === d) //poeng for number of goals B
         score_res = 2*((a === b)&&(c === d))+2*((a < b)&&(c < d))+2*((a > b)&&(c > d))
-        BettingScore.push(score_A + score_B + score_res);
+        //BettingScore.push(score_A + score_B + score_res);
 
 
-        let sum = 0;
+        let sum = score_A + score_B + score_res;
 
-        // Running the for loop
-        for (let k = 0; k < BettingScore.length; k++) {
-            sum += Math.floor(BettingScore[k]);
-        }
 
-        console.log("score: " + BettingScore + " sum: "+sum)
-
-        TotalScore = sum;
-
-        update(ref(database, user.email.replace(".", "_")), {
-
-          ["x"]:[sum]
-
-        });
-
-        return score_A + score_B + score_res;
+        return sum;
 
 
     }
 
+    const { data, loading, error } = useGoogleSheets({
+      apiKey: "AIzaSyDam7-qqRfOnNqb1-mgQ45W67XF2D68YFg",
+      sheetId: "1TsPyLP-WnteZXAdzbTMm3pvKz9DL0iIRFWdPpjHp4lk",
+      //sheetsOptions: [{ id: 'Sheet1' }],
+        });
 
+    if (!loading)
+  {
 
+  SheetData =  Array.from(data);
+  const GarminJSON = JSON.stringify(SheetData[0]);
+  const BettingJSON = JSON.stringify(SheetData[2]);
+
+  ScheduleData = Array.from(JSON.parse(GarminJSON).data);
+  
+  }
+
+   
 
     const WriteTo = (user,id,name,score) => {
 
@@ -90,10 +96,10 @@ const HomeScreen = ({ match }) => {
         return '' + n
       }
 
-      update(ref(database, user), {
+      update(ref(database, "All/"+user.replace(".", "_")), {
 
 
-        [gid(id) + name]:[name,score]
+        [gid(id)+"_"+name]:[name,score]
 
       });}
 
@@ -138,6 +144,61 @@ const HomeScreen = ({ match }) => {
       }
       })
 
+      //read whole table of data
+
+      onValue(AllRef, (snapshot) => {
+
+        const everything = snapshot.val();
+        const AllLength = Object.keys(everything).length;
+
+        var a=0;
+        var b=0;
+        var c=0;
+        var d=0;
+
+        var n_of_games = ScheduleData.map((element)=>{
+          return(element.n)
+          })[0]
+        
+        console.log("number of games active: "+n_of_games)
+        var table_real = [];
+        for (var i=0; i < AllLength; i++)
+        {
+          var table = [];
+          var score=0;
+
+          tableAll.push(everything[Object.keys(everything)[i]])
+          //console.log((everything[Object.keys(everything)[i]]))
+          //console.log("score of: "+Object.keys(everything)[i])
+          //console.log(tableAll[i])
+
+          table=Object.values(tableAll[i]) //user betting
+          table_real=Object.values(tableAll[0]) //fasit
+          //console.log(Object.values(table[0][1]))
+          for (var k=0; k < n_of_games; k++){
+            a = Object.values(table[2*k][1])[0]
+            b = Object.values(table[2*k+1][1])[0]
+            c = Object.values(table_real[2*k][1])[0]
+            d = Object.values(table_real[2*k+1][1])[0]
+            //console.log(a, b, c, d)
+            //console.log("Poeng for "+Object.keys(everything)[i]+" game:"+k+" score:"+ CalcPoints(a,b,c,d))
+            score = score + CalcPoints(a,b,c,d)
+          }
+          //console.log("total score: "+score)
+
+        //updating scire sheet
+        update(ref(database, "score"), {
+
+
+              [Object.keys(everything)[i]]:[score]
+
+        });
+
+        }
+          //console.log("everything: "+ AllLength +" # " + tableAll)
+      })
+
+
       onValue(scoreRef, (snapshot) => {
 
 
@@ -147,60 +208,24 @@ const HomeScreen = ({ match }) => {
 
         const length = Object.keys(score).length;
         //console.log(score)
-        for (var i=0; i < length; i++) 
+        for (var i=0; i < length; i++)
         {
 
         scoreData.push([Array.from(score[Object.keys(score)[i]])[0],Array.from(score[Object.keys(score)[i]])[1]])
         //   teamData.push(Array.from(data[Object.keys(data)[i]])[0])
          }
 
-        console.log(scoreData)
+        //console.log(scoreData)
       }
       })
 
 
-    const Push = (user,team,score) => {
-        database.ref(user).set(
-
-            {
-                id: data.nr,
-                game: [team,score]
-
-              }
-
-        ).catch(alert);
-    }
+    
 
 
     const country = "pl";
 
-    const { data, loading, error } = useGoogleSheets({
-        apiKey: "AIzaSyDam7-qqRfOnNqb1-mgQ45W67XF2D68YFg",
-        sheetId: "1TsPyLP-WnteZXAdzbTMm3pvKz9DL0iIRFWdPpjHp4lk",
-        //sheetsOptions: [{ id: 'Sheet1' }],
-          });
-
-      if (!loading)
-    {
-
-    SheetData =  Array.from(data);
-    const GarminJSON = JSON.stringify(SheetData[0]);
-    const BettingJSON = JSON.stringify(SheetData[2]);
-
-    ScheduleData = Array.from(JSON.parse(GarminJSON).data);
-    //BettingData = Array.from(JSON.parse(BettingJSON).data);
-
-    //console.log((BettingData))
-
-
-    //const sortScore = BettingData.sort((a,b) => b.poeng - a.poeng)
-
-    //console.log((sortScore))
-
-
-
-
-    }
+    
 
     const [name, setName] = useState("");
     const [email, setMail] = useState("");
@@ -210,28 +235,23 @@ const HomeScreen = ({ match }) => {
       //const value = evt.target.value;
 
       evt.preventDefault();
-      var score=0;
-      update(ref(database, "score"), {
+      
+      
+      
+      update(ref(database, "names"), {
 
 
-        [email.replace(".", "_")]:[name,email,score]
+        [email.replace(".", "_")]:[name]
 
       });
 
-      //alert(`The name you entered was: ${name}`)
+      alert(`The name you entered was: ${name}`)
 
       //WriteTo("score", evt.target.id, evt.target.name, evt.target.value)
 
 
     }
-    function updateScore(evt) {
-
-      evt.preventDefault();
-      
-
-
-    }
-
+    
     function handleChange(evt) {
         const value = evt.target.value;
 
@@ -239,7 +259,7 @@ const HomeScreen = ({ match }) => {
             ...state,
             [evt.target.name]: value});
 
-          console.log(evt.target.name, evt.target.value, evt.target.id) ;
+          //console.log(evt.target.name, evt.target.value, evt.target.id) ;
 
         //push data to database
         WriteTo(user.email.replace(".", "_"), evt.target.id, evt.target.name, evt.target.value)
@@ -288,9 +308,7 @@ const HomeScreen = ({ match }) => {
       </Button>
     </Form>
     <br />
-    <Button variant="primary" type="submit" onSubmit={updateScore}>
-        Update score
-      </Button>
+    
 </Container>
 
 // ====================================================================================================================================

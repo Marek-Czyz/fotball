@@ -5,7 +5,7 @@ import Header from "./components/Header"
 
 import Login from "./components/Login.js"
 import { AuthContextProvider, useAuthState } from './firebase'
-import { HashRouter, Route, Switch, Redirect  } from "react-router-dom"
+import { HashRouter, Route, Switch, Navigate, Routes, Redirect  } from "react-router-dom"
 
 import LogoutScreen from "./screens/LogoutScreen"
 import HomeScreen from "./screens/HomeScreen"

@@ -99,7 +99,7 @@ const ScoreScreen = ({ match }) => {
     return (
 
     <>
-      
+      <Container>
       <Card>
           <Card.Header>
 
@@ -108,9 +108,9 @@ const ScoreScreen = ({ match }) => {
             <Table striped bordered hover variant="light">
               <thead>
                 <tr>
-                  <th>Rank</th>
-                  <th>Name</th>
-                  <th>Points</th>
+                  <th>#</th>
+                  <th>Navn</th>
+                  <th>Poeng</th>
                 </tr>
               </thead>
               <tbody>
@@ -138,7 +138,7 @@ const ScoreScreen = ({ match }) => {
           </Card.Body>
 
         </Card>
-        
+        </Container>
         </>
 
 

@@ -23,6 +23,9 @@ const Header = () => {
             <LinkContainer to="/">
                 <Nav.Link>My sheet</Nav.Link>
             </LinkContainer>
+            <LinkContainer to="/info">
+                <Nav.Link>Rules</Nav.Link>
+            </LinkContainer>
             <LinkContainer to="/logout">
                 <Nav.Link>Log out</Nav.Link>
             </LinkContainer>

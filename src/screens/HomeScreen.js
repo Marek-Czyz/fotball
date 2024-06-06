@@ -140,7 +140,7 @@ const HomeScreen = ({ match }) => {
           teamData.push(Array.from(data[Object.keys(data)[i]])[0])
         }
 
-        //console.log(bettingData,teamData)
+        //console.log(teamData)
       }
       })
 
@@ -176,13 +176,13 @@ const HomeScreen = ({ match }) => {
           table_real=Object.values(tableAll[0]) //fasit
           //console.log(Object.values(table[0][1]))
           for (var k=0; k < n_of_games; k++){
-            a = Object.values(table[2*k][1])[0]
-            b = Object.values(table[2*k+1][1])[0]
+            if (Object.values(table[2*k][1])[0]!=="undefined") {a = Object.values(table[2*k][1])[0]}
+            if (Object.values(table[2*k+1][1])[0]!=="undefined") {b = Object.values(table[2*k+1][1])[0]}
             c = Object.values(table_real[2*k][1])[0]
             d = Object.values(table_real[2*k+1][1])[0]
             //console.log(a, b, c, d)
             //console.log("Poeng for "+Object.keys(everything)[i]+" game:"+k+" score:"+ CalcPoints(a,b,c,d))
-            score = score + CalcPoints(a,b,c,d)
+            if(a !== null && b!==null) {score = score + CalcPoints(a,b,c,d)}
           }
           //console.log("total score: "+score)
 
@@ -247,6 +247,21 @@ const HomeScreen = ({ match }) => {
 
       alert(`The name you entered was: ${name}`)
 
+      console.log(teamData)
+      var lengthTeams = Object.keys(teamData).length
+      var n = 1;
+      console.log("array length: "+lengthTeams)
+      for (var i=0; i < Object.keys(teamData).length; i=i+2)
+        {
+      
+        WriteTo(email,n,teamData[i],"0")
+        WriteTo(email,n,teamData[i+1],"0")
+        n=n+1;
+        
+        
+        //console.log(teamData[i])
+      }
+      
       //WriteTo("score", evt.target.id, evt.target.name, evt.target.value)
 
 
@@ -299,7 +314,7 @@ const HomeScreen = ({ match }) => {
       </Form.Group>
 
       <Form.Group className="mb-3" controlId="formUsername">
-        <Form.Label>Password</Form.Label>
+        <Form.Label>Name</Form.Label>
         <Form.Control type="text" placeholder="Player name" value={name} onChange={(e) => setName(e.target.value)}
         style={{ width: 270, fontSize: 22, borderColor: "#ffffff", outline: "none", borderRadius: "8px" }} />
       </Form.Group>
@@ -332,15 +347,15 @@ const HomeScreen = ({ match }) => {
 
   <>
 
-  <Card style= {data.status === "ongoing" ? {background:"#FDEBD0", width: '26rem' } : data.status === "finished" ? {background:"#D5DBDB ", width: '26rem' } : {background:"#F4F6F6", width: '26rem' } }>
+  <Card style= {data.status === "ongoing" ? {background:"#FDEBD0", width: '23rem' } : data.status === "finished" ? {background:"#D5DBDB ", width: '23rem' } : {background:"#F4F6F6", width: '23rem' } }>
 
     <Card.Body>
 
     <Row>
 
         <Col className="center ml-2">
-            <Row className="center mt-4"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Home_code} size={25} />&nbsp;&nbsp;<h4>{data.Teamhome}</h4>&nbsp;&nbsp;<h4 style={{color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr-1)-1]}</h4></Row>
-            <Row className="center mt-2"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Away_code} size={25} />&nbsp;&nbsp;<h4>{data.Teamaway}</h4>&nbsp;&nbsp;<h4 style={{color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr)-1]}</h4></Row>
+            <Row className="center mt-4"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Home_code} size={25} />&nbsp;&nbsp;<h5>{data.Teamhome}</h5>&nbsp;&nbsp;<h5 style={data.status==="finished" ? {color:"gray"}: {color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr-1)-1]}</h5></Row>
+            <Row className="center mt-3"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Away_code} size={25} />&nbsp;&nbsp;<h5>{data.Teamaway}</h5>&nbsp;&nbsp;<h5 style={data.status==="finished" ? {color:"gray"}: {color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr)-1]}</h5></Row>
         </Col>
 
 
@@ -359,7 +374,7 @@ const HomeScreen = ({ match }) => {
              value={state.minutes}
              name={"A_" + data.Teamhome}
 
-             disabled={data.status != "not started"} //disable form when blocked
+             disabled={data.status != "not started" && user.email!=="admin@kjor.pl" } //disable form when blocked but not for admin
 
              id={data.nr}
              placeholder= {bettingData[(2*data.nr-1)-1]} //transposing numbers for pairs of teams
@@ -373,7 +388,7 @@ const HomeScreen = ({ match }) => {
              value={state.minutes}
              name={"B_"+data.Teamaway}
 
-             disabled={data.status != "not started"} //disable form when blocked
+             disabled={data.status != "not started" && user.email!=="admin@kjor.pl"} //disable form when blocked but not for admin
 
              id={data.nr}
              placeholder={bettingData[(2*data.nr)-1]} //transposing numbers for pairs of teams
@@ -389,11 +404,10 @@ const HomeScreen = ({ match }) => {
     <br />
     <Row>
 
-     <p>Game nr: {data.nr},&nbsp;&nbsp;&nbsp; {data.City} {data.Date} ,{data.Time}  </p>&nbsp;&nbsp;&nbsp;{(data.status === "ongoing") && <><Spinner animation="grow" variant="danger" size="sm"/>&nbsp;<p>Live</p></>}
+     <p>Game nr: {data.nr},&nbsp;&nbsp;&nbsp; {data.City} {data.Date} ,{data.Time}  </p>&nbsp;&nbsp;&nbsp;{(data.status === "ongoing") && <><Spinner animation="grow" variant="danger" size="sm"/></>}
     </Row>
     {data.status != "not started" && <Alert variant={"info"}>
           Points earned in this game: {CalcPoints(bettingData[(2*data.nr-1)-1], bettingData[(2*data.nr)-1], betTempData[(2*data.nr-1)-1], betTempData[(2*data.nr)-1],data.nr)}<br />
-          Total: {TotalScore}
         </Alert>}
     </Card.Body>
 

@@ -10,6 +10,7 @@ import { HashRouter, Route, Switch, Navigate, Routes, Redirect  } from "react-ro
 import LogoutScreen from "./screens/LogoutScreen"
 import HomeScreen from "./screens/HomeScreen"
 import ScoreScreen from "./screens/ScoreScreen"
+import InfoScreen from "./screens/InfoScreen"
 
 //---- login code -------
 
@@ -53,6 +54,7 @@ function App() {
           <UnauthenticatedRoute  path="/Login" component={Login} exact/>
           <UnauthenticatedRoute path="/logout" component={Login} exact/>
           <AuthenticatedRoute  path="/score" component={ScoreScreen} exact/>
+          <AuthenticatedRoute  path="/info" component={InfoScreen} exact/>
           {/* <AuthenticatedRoute path="/calculator" component={PaceScreen} exact/> */}
           {/* <Route path={process.env.PUBLIC_URL + '/stats'} component={StatsScreen}></Route> */}
           

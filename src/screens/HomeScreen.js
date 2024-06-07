@@ -25,6 +25,7 @@ const HomeScreen = ({ match }) => {
     var UserData = [];
     var BettingScore = [];
     var game_nr = 0;
+    var vinner = "";
 
 
     const [sheetData, setData] = useState({});
@@ -47,6 +48,7 @@ const HomeScreen = ({ match }) => {
     const templateRef = ref_database(database, 'All/admin@kjor_pl');
     const scoreRef = ref_database(database,"score");
     const AllRef = ref_database(database,"All");
+    const VinnerRef = ref_database(database,"names");
     
 
     function CalcPoints(a,b,c,d) {
@@ -200,6 +202,19 @@ const HomeScreen = ({ match }) => {
 
         }
           //console.log("everything: "+ AllLength +" # " + tableAll)
+      })
+
+      onValue(VinnerRef, (snapshot)=> {
+      
+        const vin = snapshot.val();
+        for (var i=0; i < Object.keys(vin).length; i++)
+        {
+          //console.log(Object.keys(vin)[i])
+          //console.log(vin[Object.keys(vin)[i]][0])
+          if (Object.keys(vin)[i] === user.email.replace(".", "_")){vinner=vin[Object.keys(vin)[i]][0]}
+          
+        }
+        
       })
 
 
@@ -382,7 +397,7 @@ const HomeScreen = ({ match }) => {
 Velkommen til Euro2024 tipping <b>{findUser(user.email.replace(".", "_"))}</b>, Lykke til!<br /><br />
 <Card style= {{background:"#F4F6F6", width: '23rem' }}><Card.Body>
 Euro2024 vinner: <select class="form-select" aria-label="Default select example" onChange={changeWinner} disabled={game_nr>0}>
-  
+<option selected>{vinner}</option>
   <option value="Albania">Albania</option>
   <option value="Austria">Austria</option>
   <option value="Belgium">Belgium</option>

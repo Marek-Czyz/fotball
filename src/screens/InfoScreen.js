@@ -11,7 +11,7 @@ const InfoScreen = ({ match }) => {
         <Container >
         <Card style= {{background:"#F8F1F5", width: '24rem'}}>
           <Card.Header>
-          Poeng
+          Poeng for hver kamp
           </Card.Header>
           <Card.Body>
             <b>1 p</b> for riktig antall mål<br/>
@@ -28,6 +28,22 @@ const InfoScreen = ({ match }) => {
           </Card.Body>
           
         </Card>
+        <br/> 
+        <Card style= {{background:"#F8F1F5", width: '24rem'}}>
+          <Card.Header>
+          Ekstra poeng
+          </Card.Header>
+          <Card.Body>
+            <b>5 p</b> for riktig vinner<br/>
+            
+            <br/>
+            Overall vinner tipping stenger når første kamp starter<br/>
+            
+        
+
+          </Card.Body>
+          
+        </Card>
         <br/>
         <Card style= {{background:"#F8F1F5", width: '24rem'}}>
           <Card.Header>
@@ -35,7 +51,7 @@ const InfoScreen = ({ match }) => {
           </Card.Header>
           <Card.Body>
             Frist for å bli med i spillet: <b>12.06.2024</b><br/>
-            Frist for å legge inn score: <b>kl 00:00 på kampdagen</b> <br/>
+            Frist for å legge inn score: <b>kamp start</b> <br/>
             
             
 

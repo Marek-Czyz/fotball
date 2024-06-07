@@ -24,7 +24,7 @@ const HomeScreen = ({ match }) => {
     var ScheduleData = [];
     var UserData = [];
     var BettingScore = [];
-    var TotalScore = 0;
+    var game_nr = 0;
 
 
     const [sheetData, setData] = useState({});
@@ -84,6 +84,8 @@ const HomeScreen = ({ match }) => {
 
   ScheduleData = Array.from(JSON.parse(GarminJSON).data);
   UserData = Array.from(JSON.parse(BettingJSON).data)
+  game_nr = ScheduleData[0].n
+  //console.log(ScheduleData[0].n)
   }
 
    
@@ -141,7 +143,7 @@ const HomeScreen = ({ match }) => {
           teamData.push(Array.from(data[Object.keys(data)[i]])[0])
         }
 
-        console.log(bettingData)
+        //console.log(bettingData)
       }
       })
 
@@ -158,6 +160,7 @@ const HomeScreen = ({ match }) => {
         var d=0;
 
         var n_of_games = ScheduleData.map((element)=>{
+          
           return(element.n)
           })[0]
         
@@ -272,7 +275,7 @@ const HomeScreen = ({ match }) => {
       var name = "";
       for (var j=0; j < Object.keys(UserData).length; j++)
       {
-        console.log(UserData[j].epost)
+        //console.log(UserData[j].epost)
         if (UserData[j].epost === epost){
           name = UserData[j].navn
       }
@@ -281,6 +284,23 @@ const HomeScreen = ({ match }) => {
     return name
   }
     
+  function changeWinner(evt) {
+
+    const vinner = evt.target.value;
+    update(ref(database, "names"), {
+
+
+      [user.email.replace(".", "_")]:[vinner]
+
+    });//console.log("min vinner er: "+vinner)
+  }
+
+
+
+
+
+
+
     function handleChange(evt) {
         const value = evt.target.value;
 
@@ -359,8 +379,41 @@ const HomeScreen = ({ match }) => {
 
 <br />
 
-Velkommen til Euro2024 tipping <b>{findUser(user.email.replace(".", "_"))}</b>, Lykke til!<br />
-<p>Fyll dine svar i de hvite feltene:</p><br />
+Velkommen til Euro2024 tipping <b>{findUser(user.email.replace(".", "_"))}</b>, Lykke til!<br /><br />
+<Card style= {{background:"#F4F6F6", width: '23rem' }}><Card.Body>
+Euro2024 vinner: <select class="form-select" aria-label="Default select example" onChange={changeWinner} disabled={game_nr>0}>
+  
+  <option value="Albania">Albania</option>
+  <option value="Austria">Austria</option>
+  <option value="Belgium">Belgium</option>
+  <option value="Croatia">Croatia</option>
+  <option value="Czech Republic">Czech Republic</option>
+  <option value="Denmark">Denmark</option>
+  <option value="England">England</option>
+  <option value="France">France</option>
+  <option value="Georgia">Georgia</option>
+  <option value="Germany">Germany</option>
+  <option value="Hungary">Hungary</option>
+  <option value="Italy">Italy</option>
+  <option value="Netherlands">Netherlands</option>
+  <option value="Poland">Poland</option>
+  <option value="Portugal">Portugal</option>
+  <option value="Romania">Romania</option>
+  <option value="Scotland">Scotland</option>
+  <option value="Serbia">Serbia</option>
+  <option value="Slovakia">Slovakia</option>
+  <option value="Slovenia">Slovenia</option>
+  <option value="Spain">Spain</option>
+  <option value="Switzerland">Switzerland</option>
+  <option value="Turkey">Turkey</option>
+  <option value="Ukraine">Ukraine</option>
+
+
+</select>
+
+</Card.Body></Card>
+<br /><br />
+<p>Fyll dine svar i de hvite feltene:</p>
 {ScheduleData.map((data) => (
 
 
@@ -433,50 +486,6 @@ Velkommen til Euro2024 tipping <b>{findUser(user.email.replace(".", "_"))}</b>, 
     </Card.Body>
 
 
-
-
-
-
-
-
-
-
-    {/* <Card.Body>
-
-      <Row>
-
-        <Col className="ml-2 mr-2 mb-2 mt-2"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Home_code} size={35} /></Col>
-
-        <Col align="center" ><h4>{data.Teamhome}</h4></Col>
-        <Col align="center" ><h4>{data.Scorehome}</h4></Col>
-        <Col align="center"><h4> : </h4></Col>
-        <Col align="center"><h4>{data.Scoreaway}</h4></Col>
-        <Col align="center"><h4>{data.Teamaway}</h4></Col>
-
-        <Col className="ml-2 mr-2 mb-2 mt-2"><CountryFlag isoCode={data.Away_code === "undefined" ? "de" : data.Away_code} size={35} /></Col>
-
-      </Row>
-      <Row>
-      <Col align="center">{data.Date} kl. {data.Time}</Col>
-      </Row>
-      <Row>
-      <Col align="center">{data.status}</Col>
-      </Row>
-
-      <br />
-
-      <Dropdown align="center">
-        <Dropdown.Toggle variant="secondary" id="dropdown-basic" className="ml-2 mr-2 mb-2 mt-2">
-          current betting
-        </Dropdown.Toggle>
-
-        <Dropdown.Menu>
-          <Dropdown.Item href="#/action-1">Marek: <b>{data.Marek === "udefined" ? "-" : data.Marek.split(":")[0]} : {data.Marek === "udefined" ? "-" : data.Marek.split(":")[1]}</b>,  ({(data.Scorehome === data.Marek.split(":")[0] ? 1 : 0) + (data.Scoreaway === data.Marek.split(":")[1] ? 1 : 0) + (data.Scoreaway > data.Scorehome && data.Marek.split(":")[1] > data.Marek.split(":")[0] ? 2 : 0) + (data.Scoreaway < data.Scorehome && data.Marek.split(":")[1] < data.Marek.split(":")[0] ? 2 : 0) + (data.Scoreaway === data.Scorehome && data.Marek.split(":")[1] === data.Marek.split(":")[0] ? 2 : 0)}p)</Dropdown.Item>
-          <Dropdown.Item href="#/action-2">Andre: <b>{data.Marek === "udefined" ? "-" : data.Marek.split(":")[0]} : {data.Marek === "udefined" ? "-" : data.Marek.split(":")[1]}</b>,  ({(data.Scorehome === data.Andre.split(":")[0] ? 1 : 0) + (data.Scoreaway === data.Andre.split(":")[1] ? 1 : 0) + (data.Scoreaway > data.Scorehome && data.Andre.split(":")[1] > data.Andre.split(":")[0] ? 2 : 0) + (data.Scoreaway < data.Scorehome && data.Andre.split(":")[1] < data.Andre.split(":")[0] ? 2 : 0) + (data.Scoreaway === data.Scorehome && data.Andre.split(":")[1] === data.Andre.split(":")[0] ? 2 : 0)}p)</Dropdown.Item>
-
-        </Dropdown.Menu>
-      </Dropdown>
-    </Card.Body> */}
   </Card><br /></>
 
 ))}

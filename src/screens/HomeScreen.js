@@ -12,6 +12,7 @@ import database from '../firebase';
 import { getDatabase, onValue, update, ref, set, get, child, ref as ref_database, doc ,getDoc } from 'firebase/database'
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
+import { GiWatch } from "react-icons/gi";
 
 
 
@@ -21,8 +22,8 @@ const HomeScreen = ({ match }) => {
 
     var SheetData = [];
     var ScheduleData = [];
-    var bettingTemplate = [];
-    const BettingScore = [];
+    var UserData = [];
+    var BettingScore = [];
     var TotalScore = 0;
 
 
@@ -82,7 +83,7 @@ const HomeScreen = ({ match }) => {
   const BettingJSON = JSON.stringify(SheetData[2]);
 
   ScheduleData = Array.from(JSON.parse(GarminJSON).data);
-  
+  UserData = Array.from(JSON.parse(BettingJSON).data)
   }
 
    
@@ -140,7 +141,7 @@ const HomeScreen = ({ match }) => {
           teamData.push(Array.from(data[Object.keys(data)[i]])[0])
         }
 
-        //console.log(teamData)
+        console.log(bettingData)
       }
       })
 
@@ -160,7 +161,7 @@ const HomeScreen = ({ match }) => {
           return(element.n)
           })[0]
         
-        console.log("number of games active: "+n_of_games)
+        //console.log("number of games active: "+n_of_games)
         var table_real = [];
         for (var i=0; i < AllLength; i++)
         {
@@ -266,6 +267,19 @@ const HomeScreen = ({ match }) => {
 
 
     }
+
+    function findUser(epost) {
+      var name = "";
+      for (var j=0; j < Object.keys(UserData).length; j++)
+      {
+        console.log(UserData[j].epost)
+        if (UserData[j].epost === epost){
+          name = UserData[j].navn
+      }
+      
+    }
+    return name
+  }
     
     function handleChange(evt) {
         const value = evt.target.value;
@@ -302,6 +316,10 @@ const HomeScreen = ({ match }) => {
 
 {user.email==="admin@kjor.pl" &&
  <Container >
+  <br />Admin panel:
+   <Card style= {data.status === "ongoing" ? {background:"#FDEBD0", width: '23rem' } : data.status === "finished" ? {background:"#D5DBDB ", width: '23rem' } : {background:"#F4F6F6", width: '23rem' } }>
+
+<Card.Body>
  <br />
  <Form onSubmit={handleSubmit}>
       <Form.Group className="mb-3" controlId="formEmail">
@@ -323,7 +341,8 @@ const HomeScreen = ({ match }) => {
       </Button>
     </Form>
     <br />
-    
+    </Card.Body>
+    </Card>
 </Container>
 
 // ====================================================================================================================================
@@ -340,8 +359,8 @@ const HomeScreen = ({ match }) => {
 
 <br />
 
-
-
+Velkommen til Euro2024 tipping <b>{findUser(user.email.replace(".", "_"))}</b>, Lykke til!<br />
+<p>Fyll dine svar i de hvite feltene:</p><br />
 {ScheduleData.map((data) => (
 
 
@@ -350,7 +369,12 @@ const HomeScreen = ({ match }) => {
   <Card style= {data.status === "ongoing" ? {background:"#FDEBD0", width: '23rem' } : data.status === "finished" ? {background:"#D5DBDB ", width: '23rem' } : {background:"#F4F6F6", width: '23rem' } }>
 
     <Card.Body>
+    <Row>
 
+<Alert variant={"secondary"}>
+<b>#{data.nr}</b>&nbsp; {data.City} {data.Date}<GiWatch/>{data.Time}  &nbsp;{(data.status === "ongoing") && <><Spinner animation="grow" variant="danger" size="sm"/></>}
+  </Alert>
+</Row>
     <Row>
 
         <Col className="center ml-2">
@@ -402,10 +426,7 @@ const HomeScreen = ({ match }) => {
         </Col>
     </Row>
     <br />
-    <Row>
-
-     <p>Game nr: {data.nr},&nbsp;&nbsp;&nbsp; {data.City} {data.Date} ,{data.Time}  </p>&nbsp;&nbsp;&nbsp;{(data.status === "ongoing") && <><Spinner animation="grow" variant="danger" size="sm"/></>}
-    </Row>
+    
     {data.status != "not started" && <Alert variant={"info"}>
           Points earned in this game: {CalcPoints(bettingData[(2*data.nr-1)-1], bettingData[(2*data.nr)-1], betTempData[(2*data.nr-1)-1], betTempData[(2*data.nr)-1],data.nr)}<br />
         </Alert>}

@@ -1,15 +1,12 @@
 
 
-import React, { useEffect, useState }  from "react"
+import React, { useState }  from "react"
 import useGoogleSheets from 'use-google-sheets';
-import { Form, Row, Col, Container, Card, Badge, ProgressBar, Image, Table, Accordion, Button, FormGroup} from "react-bootstrap";
-//import { AuthContextProvider, useAuthState } from './firebase'
+import { Form, Row, Col, Container, Card, Button} from "react-bootstrap";
 import { getAuth } from 'firebase/auth';
 import CountryFlag from "react-native-country-flag";
-import Dropdown from 'react-bootstrap/Dropdown';
-import { useCallback } from 'react'
 import database from '../firebase';
-import { getDatabase, onValue, update, ref, set, get, child, ref as ref_database, doc ,getDoc } from 'firebase/database'
+import {  onValue, update, ref, ref as ref_database} from 'firebase/database'
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
 import { GiWatch } from "react-icons/gi";
@@ -23,17 +20,9 @@ const HomeScreen = ({ match }) => {
     var SheetData = [];
     var ScheduleData = [];
     var UserData = [];
-    var BettingScore = [];
     var game_nr = 0;
     var vinner = "";
 
-
-    const [sheetData, setData] = useState({});
-
-    const [show, setShow] = useState(false);
-
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
 
     const bettingData = [];
     const betTempData = [];
@@ -49,6 +38,8 @@ const HomeScreen = ({ match }) => {
     const scoreRef = ref_database(database,"score");
     const AllRef = ref_database(database,"All");
     const VinnerRef = ref_database(database,"names");
+
+    const scrollToToday = (y) => {window.scrollTo(0,y);}
     
 
     function CalcPoints(a,b,c,d) {
@@ -60,18 +51,15 @@ const HomeScreen = ({ match }) => {
         score_A = +(a === c) //poeng for number of goals A
         score_B = +(b === d) //poeng for number of goals B
         score_res = 2*((a === b)&&(c === d))+2*((a < b)&&(c < d))+2*((a > b)&&(c > d))
-        //BettingScore.push(score_A + score_B + score_res);
-
 
         let sum = score_A + score_B + score_res;
-
 
         return sum;
 
 
     }
 
-    const { data, loading, error } = useGoogleSheets({
+    const { data, loading} = useGoogleSheets({
       apiKey: "AIzaSyDam7-qqRfOnNqb1-mgQ45W67XF2D68YFg",
       sheetId: "1TsPyLP-WnteZXAdzbTMm3pvKz9DL0iIRFWdPpjHp4lk",
       //sheetsOptions: [{ id: 'Sheet1' }],
@@ -108,8 +96,6 @@ const HomeScreen = ({ match }) => {
 
       });}
 
-
-      //console.log("this is ref: "+templateRef)
 
       //array of all scores and teams in the template
       onValue(templateRef,(snapshot) => {
@@ -174,9 +160,6 @@ const HomeScreen = ({ match }) => {
           var score=0;
 
           tableAll.push(everything[Object.keys(everything)[i]])
-          //console.log((everything[Object.keys(everything)[i]]))
-          //console.log("score of: "+Object.keys(everything)[i])
-          //console.log(tableAll[i])
 
           table=Object.values(tableAll[i]) //user betting
           table_real=Object.values(tableAll[0]) //fasit
@@ -209,10 +192,7 @@ const HomeScreen = ({ match }) => {
         const vin = snapshot.val();
         for (var i=0; i < Object.keys(vin).length; i++)
         {
-          //console.log(Object.keys(vin)[i])
-          //console.log(vin[Object.keys(vin)[i]][0])
           if (Object.keys(vin)[i] === user.email.replace(".", "_")){vinner=vin[Object.keys(vin)[i]][0]}
-          
         }
         
       })
@@ -237,12 +217,6 @@ const HomeScreen = ({ match }) => {
         //console.log(scoreData)
       }
       })
-
-
-    
-
-
-    const country = "pl";
 
     
 
@@ -389,7 +363,9 @@ const HomeScreen = ({ match }) => {
 
 
 
+
     <Container >
+    
        <br />
 
 <br />
@@ -431,9 +407,11 @@ Euro2024 vinner: <select class="form-select" aria-label="Default select example"
 <p>Fyll dine svar i de hvite feltene:</p>
 {ScheduleData.map((data) => (
 
-
+//data.status ==="ongoing" ? window.stop():
+  
+  
   <>
-
+<div onLoad={scrollToToday((data.n * 400)-300)}>
   <Card style= {data.status === "ongoing" ? {background:"#FDEBD0", width: '23rem' } : data.status === "finished" ? {background:"#D5DBDB ", width: '23rem' } : {background:"#F4F6F6", width: '23rem' } }>
 
     <Card.Body>
@@ -446,8 +424,8 @@ Euro2024 vinner: <select class="form-select" aria-label="Default select example"
     <Row>
 
         <Col className="center ml-2">
-            <Row className="center mt-4"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Home_code} size={25} />&nbsp;&nbsp;<h5>{data.Teamhome}</h5>&nbsp;&nbsp;<h5 style={data.status==="finished" ? {color:"gray"}: {color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr-1)-1]}</h5></Row>
-            <Row className="center mt-3"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Away_code} size={25} />&nbsp;&nbsp;<h5>{data.Teamaway}</h5>&nbsp;&nbsp;<h5 style={data.status==="finished" ? {color:"gray"}: {color:"red"}}>{(data.status != "not started") && betTempData[(2*data.nr)-1]}</h5></Row>
+            <Row className="center mt-4"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Home_code} size={25} />&nbsp;&nbsp;<h5>{data.Teamhome}</h5>&nbsp;&nbsp;<h5 style={data.status==="finished" ? {color:"gray"}: {color:"red"}}>{(data.status !== "not started") && betTempData[(2*data.nr-1)-1]}</h5></Row>
+            <Row className="center mt-3"><CountryFlag isoCode={data.Home_code === "undefined" ? "de" : data.Away_code} size={25} />&nbsp;&nbsp;<h5>{data.Teamaway}</h5>&nbsp;&nbsp;<h5 style={data.status==="finished" ? {color:"gray"}: {color:"red"}}>{(data.status !== "not started") && betTempData[(2*data.nr)-1]}</h5></Row>
         </Col>
 
 
@@ -466,7 +444,7 @@ Euro2024 vinner: <select class="form-select" aria-label="Default select example"
              value={state.minutes}
              name={"A_" + data.Teamhome}
 
-             disabled={data.status != "not started" && user.email!=="admin@kjor.pl" } //disable form when blocked but not for admin
+             disabled={data.status !== "not started" && user.email!=="admin@kjor.pl" } //disable form when blocked but not for admin
 
              id={data.nr}
              placeholder= {bettingData[(2*data.nr-1)-1]} //transposing numbers for pairs of teams
@@ -480,7 +458,7 @@ Euro2024 vinner: <select class="form-select" aria-label="Default select example"
              value={state.minutes}
              name={"B_"+data.Teamaway}
 
-             disabled={data.status != "not started" && user.email!=="admin@kjor.pl"} //disable form when blocked but not for admin
+             disabled={data.status !== "not started" && user.email!=="admin@kjor.pl"} //disable form when blocked but not for admin
 
              id={data.nr}
              placeholder={bettingData[(2*data.nr)-1]} //transposing numbers for pairs of teams
@@ -495,14 +473,14 @@ Euro2024 vinner: <select class="form-select" aria-label="Default select example"
     </Row>
     <br />
     
-    {data.status != "not started" && <Alert variant={"info"}>
+    {data.status !== "not started" && <Alert variant={"info"}>
           Points earned in this game: {CalcPoints(bettingData[(2*data.nr-1)-1], bettingData[(2*data.nr)-1], betTempData[(2*data.nr-1)-1], betTempData[(2*data.nr)-1],data.nr)}<br />
         </Alert>}
     </Card.Body>
 
 
-  </Card><br /></>
-
+  </Card><br /></div></>
+  
 ))}
 
         </Container>

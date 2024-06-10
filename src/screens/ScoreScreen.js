@@ -1,16 +1,16 @@
-import React, { useEffect, useState }  from "react"
+import React  from "react"
 import useGoogleSheets from 'use-google-sheets';
-import { Form, Row, Col, Container, Card, Badge, ProgressBar, Image, Table, Accordion, Button} from "react-bootstrap";
-import { getDatabase, onValue, update, ref, set, get, child, ref as ref_database } from 'firebase/database'
+import {  Container, Card, Table } from "react-bootstrap";
+import {  onValue, ref as ref_database } from 'firebase/database'
 import database from '../firebase';
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table-next';
+
 
 const ScoreScreen = ({ match }) => {
 
     var SheetData = [];
     
     var BettingData = [];
-    var bettingData = [];
+    //var bettingData = [];
     const scoreObjects = [];
     const names = [];
 
@@ -24,7 +24,7 @@ const ScoreScreen = ({ match }) => {
     const scoreRef = ref_database(database,"score");
     const nameRef = ref_database(database,"names");
     
-    const { data, loading, error } = useGoogleSheets({
+    const { data, loading} = useGoogleSheets({
         apiKey: "AIzaSyDam7-qqRfOnNqb1-mgQ45W67XF2D68YFg",
         sheetId: "1TsPyLP-WnteZXAdzbTMm3pvKz9DL0iIRFWdPpjHp4lk",
         //sheetsOptions: [{ id: 'Sheet1' }],
@@ -70,11 +70,11 @@ const ScoreScreen = ({ match }) => {
       for (var i=0; i < length; i++) {
         var realName ="";
         scoreTable.push(data[Object.keys(data)[i]])
-        bettingData = Array.from(Object.values(scoreTable[i])) 
+        //bettingData = Array.from(Object.values(scoreTable[i])) 
 
         for (var j=0; j < Object.keys(BettingData).length; j++) {
           
-          if (BettingData[j].epost == Object.keys(data)[i]){
+          if (BettingData[j].epost === Object.keys(data)[i]){
             realName = BettingData[j].navn
             //console.log(BettingData[j].epost," <> "+ Object.keys(data)[i])
           } else {}
@@ -100,10 +100,9 @@ const ScoreScreen = ({ match }) => {
 
     <>
       <Container>
+      <br/>
       <Card>
-          <Card.Header>
-
-          </Card.Header>
+          
           <Card.Body>
             <Table striped bordered hover variant="light">
               <thead>

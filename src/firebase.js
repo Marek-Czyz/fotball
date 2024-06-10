@@ -1,10 +1,8 @@
 import React from "react";
 import { getAuth, onAuthStateChanged } from 'firebase/auth'
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { useState, useEffect, useContext, createContext } from 'react'
-import { getDatabase, ref, set } from 'firebase/database'
-import { getFirestore } from "firebase/firestore";
+import { getDatabase } from 'firebase/database'
 
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -25,7 +23,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
 
 
 

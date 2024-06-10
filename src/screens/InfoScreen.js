@@ -1,5 +1,5 @@
-import React, { useEffect, useState }  from "react"
-import { Form, Button, Alert, Col, Card, Container} from "react-bootstrap"
+import React  from "react"
+import {  Card, Container} from "react-bootstrap"
 import statusImage from '../Images/status.png' // relative path to image 
 
 const InfoScreen = ({ match }) => {
@@ -70,7 +70,7 @@ const InfoScreen = ({ match }) => {
             
             
             
-            <img src={statusImage}/>
+            <img src={statusImage} alt="games"/>
             
             
 
